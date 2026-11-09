@@ -44,3 +44,43 @@ class EmpleadoRespuesta(BaseModel):
     creado_en: datetime
 
     model_config = {"from_attributes": True}
+
+
+class VacacionCrear(BaseModel):
+    fecha_inicio: str = Field(min_length=1)
+    fecha_fin: str = Field(min_length=1)
+
+    @field_validator("fecha_inicio", "fecha_fin")
+    @classmethod
+    def validar_formato_fecha(cls, valor: str) -> str:
+        try:
+            date.fromisoformat(valor)
+        except ValueError as exc:
+            raise ValueError("Formato de fecha inválido, usa AAAA-MM-DD") from exc
+        return valor
+
+
+class VacacionRespuesta(BaseModel):
+    id: int
+    empleado_id: int
+    fecha_inicio: str
+    fecha_fin: str
+    dias_habiles: int
+    dias_restantes: int
+
+
+class SolicitudResumen(BaseModel):
+    id: int
+    fecha_inicio: str
+    fecha_fin: str
+    dias_habiles: int
+
+    model_config = {"from_attributes": True}
+
+
+class SaldoVacacionesRespuesta(BaseModel):
+    empleado_id: int
+    anio: int
+    dias_usados: int
+    dias_disponibles: int
+    solicitudes: list[SolicitudResumen]

@@ -47,3 +47,26 @@ export function crearEmpleado(datos) {
     body: JSON.stringify(datos),
   })
 }
+
+export function crearVacacion(empleadoId, datos) {
+  return solicitar(`/api/empleados/${empleadoId}/vacaciones`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos),
+  })
+}
+
+export function obtenerSaldoVacaciones(empleadoId, anio) {
+  const parametros = new URLSearchParams()
+
+  if (anio) {
+    parametros.set('anio', anio)
+  }
+
+  const query = parametros.toString()
+  return solicitar(
+    query
+      ? `/api/empleados/${empleadoId}/vacaciones?${query}`
+      : `/api/empleados/${empleadoId}/vacaciones`,
+  )
+}

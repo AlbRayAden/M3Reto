@@ -3,13 +3,14 @@
 from fastapi import FastAPI
 
 from database import Base, engine
-from routers import empleados
+from routers import empleados, vacaciones
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Gestión de empleados")
 
 app.include_router(empleados.router)
+app.include_router(vacaciones.router)
 
 
 @app.get("/api/salud")
