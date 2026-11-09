@@ -1,0 +1,3 @@
+Repositorio de la entrega (Módulo 3 · Reto HU-10 Solicitar vacaciones):
+https://github.com/AlbRayAden/M3Reto
+Proyecto: carpeta m3-sistemas_agenticos/
