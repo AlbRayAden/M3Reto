@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from catalogos import DEPARTAMENTOS_VALIDOS
 from database import obtener_db
-from esquemas import EmpleadoCrear, EmpleadoRespuesta
+from esquemas import EmpleadoBaja, EmpleadoCrear, EmpleadoEditar, EmpleadoRespuesta
 from modelos import Empleado
 
 router = APIRouter(prefix="/api", tags=["empleados"])
@@ -86,3 +86,46 @@ def listar_empleados(
 @router.get("/departamentos", response_model=list[str])
 def listar_departamentos() -> list[str]:
     return DEPARTAMENTOS_VALIDOS
+
+
+@router.put("/empleados/{empleado_id}", response_model=EmpleadoRespuesta)
+def editar_empleado(
+    empleado_id: int, datos: EmpleadoEditar, db: Session = Depends(obtener_db)
+) -> Empleado:
+    empleado = db.get(Empleado, empleado_id)
+    if empleado is None:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    if empleado.estado == "baja":
+        raise HTTPException(
+            status_code=409, detail="No se puede editar a un empleado dado de baja"
+        )
+
+    empleado.nombre = datos.nombre
+    empleado.puesto = datos.puesto
+    empleado.departamento = datos.departamento
+    empleado.fecha_ingreso = datos.fecha_ingreso
+    db.commit()
+    db.refresh(empleado)
+    return empleado
+
+
+@router.post("/empleados/{empleado_id}/baja", response_model=EmpleadoRespuesta)
+def dar_de_baja_empleado(
+    empleado_id: int, datos: EmpleadoBaja, db: Session = Depends(obtener_db)
+) -> Empleado:
+    empleado = db.get(Empleado, empleado_id)
+    if empleado is None:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    if date.fromisoformat(datos.fecha_baja) < date.fromisoformat(empleado.fecha_ingreso):
+        raise HTTPException(
+            status_code=422,
+            detail="El campo fecha_baja no puede ser anterior a la fecha de ingreso",
+        )
+
+    empleado.estado = "baja"
+    empleado.fecha_baja = datos.fecha_baja
+    db.commit()
+    db.refresh(empleado)
+    return empleado

@@ -48,6 +48,22 @@ export function crearEmpleado(datos) {
   })
 }
 
+export function editarEmpleado(empleadoId, datos) {
+  return solicitar(`/api/empleados/${empleadoId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos),
+  })
+}
+
+export function darDeBajaEmpleado(empleadoId, datos) {
+  return solicitar(`/api/empleados/${empleadoId}/baja`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos),
+  })
+}
+
 export function crearVacacion(empleadoId, datos) {
   return solicitar(`/api/empleados/${empleadoId}/vacaciones`, {
     method: 'POST',

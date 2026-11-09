@@ -1,11 +1,27 @@
 import { useState } from 'react'
 import FormularioVacaciones from './FormularioVacaciones.jsx'
+import FormularioEditarEmpleado from './FormularioEditarEmpleado.jsx'
+import FormularioBaja from './FormularioBaja.jsx'
 
-export default function DirectorioEmpleados({ empleados }) {
+export default function DirectorioEmpleados({
+  empleados,
+  onEmpleadoActualizado,
+  empleadoEditarAbierto,
+  onCambiarEditarAbierto,
+}) {
   const [empleadoVacacionesAbierto, setEmpleadoVacacionesAbierto] = useState(null)
+  const [empleadoBajaAbierto, setEmpleadoBajaAbierto] = useState(null)
 
   function alternarVacaciones(empleadoId) {
     setEmpleadoVacacionesAbierto((actual) => (actual === empleadoId ? null : empleadoId))
+  }
+
+  function alternarEditar(empleadoId) {
+    onCambiarEditarAbierto?.((actual) => (actual === empleadoId ? null : empleadoId))
+  }
+
+  function alternarBaja(empleadoId) {
+    setEmpleadoBajaAbierto((actual) => (actual === empleadoId ? null : empleadoId))
   }
 
   return (
@@ -46,10 +62,40 @@ export default function DirectorioEmpleados({ empleados }) {
                     Solicitar vacaciones
                   </button>
                 )}
+                <button
+                  type="button"
+                  data-testid={`editar-empleado-${empleado.id}`}
+                  onClick={() => alternarEditar(empleado.id)}
+                >
+                  Editar
+                </button>
+                {empleado.estado === 'activo' && (
+                  <button
+                    type="button"
+                    data-testid={`baja-empleado-${empleado.id}`}
+                    onClick={() => alternarBaja(empleado.id)}
+                  >
+                    Dar de baja
+                  </button>
+                )}
                 {empleadoVacacionesAbierto === empleado.id && (
                   <FormularioVacaciones
                     empleadoId={empleado.id}
                     onCerrar={() => setEmpleadoVacacionesAbierto(null)}
+                  />
+                )}
+                {empleadoEditarAbierto === empleado.id && (
+                  <FormularioEditarEmpleado
+                    empleado={empleado}
+                    onEmpleadoActualizado={onEmpleadoActualizado}
+                    onCerrar={() => onCambiarEditarAbierto?.(null)}
+                  />
+                )}
+                {empleadoBajaAbierto === empleado.id && (
+                  <FormularioBaja
+                    empleado={empleado}
+                    onEmpleadoActualizado={onEmpleadoActualizado}
+                    onCerrar={() => setEmpleadoBajaAbierto(null)}
                   />
                 )}
               </td>

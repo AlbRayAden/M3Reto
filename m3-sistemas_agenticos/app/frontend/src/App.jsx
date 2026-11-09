@@ -9,6 +9,7 @@ function App() {
   const [empleados, setEmpleados] = useState([])
   const [busqueda, setBusqueda] = useState('')
   const [departamento, setDepartamento] = useState('')
+  const [empleadoEditarAbierto, setEmpleadoEditarAbierto] = useState(null)
 
   const cargarEmpleados = useCallback(() => {
     obtenerEmpleados({ buscar: busqueda, departamento })
@@ -23,14 +24,19 @@ function App() {
   return (
     <main>
       <h1>Gestión de empleados</h1>
-      <FormularioEmpleado onEmpleadoCreado={cargarEmpleados} />
+      {!empleadoEditarAbierto && <FormularioEmpleado onEmpleadoCreado={cargarEmpleados} />}
       <BuscadorEmpleados
         busqueda={busqueda}
         departamento={departamento}
         onCambiarBusqueda={setBusqueda}
         onCambiarDepartamento={setDepartamento}
       />
-      <DirectorioEmpleados empleados={empleados} />
+      <DirectorioEmpleados
+        empleados={empleados}
+        onEmpleadoActualizado={cargarEmpleados}
+        empleadoEditarAbierto={empleadoEditarAbierto}
+        onCambiarEditarAbierto={setEmpleadoEditarAbierto}
+      />
     </main>
   )
 }

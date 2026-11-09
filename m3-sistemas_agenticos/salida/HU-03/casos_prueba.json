@@ -1,0 +1,272 @@
+{
+  "historia": "HU-03",
+  "casos": [
+    {
+      "id": "CP-01",
+      "escenario": "Editar puesto y departamento de un empleado activo",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, nombre Ana Pérez, puesto Analista, departamento Ventas, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto y departamento nuevos",
+        "Verificar código y campos actualizados"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "Analista Senior",
+        "departamento": "Tecnología"
+      },
+      "resultado_esperado": "Código 200. El empleado 7 tiene puesto 'Analista Senior' y departamento 'Tecnología'; numero_empleado sigue 'EMP-0007' y correo sigue 'ana@empresa.com'."
+    },
+    {
+      "id": "CP-02",
+      "escenario": "Editar puesto y departamento de un empleado activo",
+      "nivel": "e2e",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, nombre Ana Pérez, puesto Analista, departamento Ventas, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Clic en 'editar-empleado-7'",
+        "Cambiar 'empleado-puesto' a 'Analista Senior'",
+        "Cambiar 'empleado-departamento' a 'Tecnología'",
+        "Clic en 'empleado-guardar'"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "Analista Senior",
+        "departamento": "Tecnología"
+      },
+      "resultado_esperado": "Se muestra 'mensaje-exito' confirmando la actualización; la fila del empleado 7 refleja puesto 'Analista Senior' y departamento 'Tecnología'."
+    },
+    {
+      "id": "CP-03",
+      "escenario": "El número de empleado y el correo no cambian aunque se envíen en la petición",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista, departamento Ventas"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con correo y numero_empleado distintos, junto con puesto y departamento válidos",
+        "Verificar código y que correo/numero_empleado no cambiaron"
+      ],
+      "datos": {
+        "id": "7",
+        "correo_enviado": "otro@empresa.com",
+        "numero_empleado_enviado": "EMP-9999",
+        "puesto": "Analista Senior",
+        "departamento": "Tecnología"
+      },
+      "resultado_esperado": "Código 200. El correo del empleado 7 sigue siendo 'ana@empresa.com' y numero_empleado sigue 'EMP-0007'."
+    },
+    {
+      "id": "CP-04",
+      "escenario": "Editar el puesto en los límites exactos de longitud permitida",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto de 2 caracteres",
+        "Verificar código de respuesta"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "AB"
+      },
+      "resultado_esperado": "Código 200."
+    },
+    {
+      "id": "CP-05",
+      "escenario": "Editar el puesto en los límites exactos de longitud permitida",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto de 60 caracteres",
+        "Verificar código de respuesta"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "123456789012345678901234567890123456789012345678901234567890"
+      },
+      "resultado_esperado": "Código 200."
+    },
+    {
+      "id": "CP-06",
+      "escenario": "Editar el puesto con 1 carácter se rechaza por ser menor al mínimo",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto de 1 carácter",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "A"
+      },
+      "resultado_esperado": "Código 422. La pantalla muestra en 'mensaje-error' que el campo 'puesto' debe corregirse."
+    },
+    {
+      "id": "CP-07",
+      "escenario": "Editar el puesto con 61 caracteres se rechaza por exceder el máximo",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto de 61 caracteres",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "1234567890123456789012345678901234567890123456789012345678901"
+      },
+      "resultado_esperado": "Código 422. La pantalla muestra en 'mensaje-error' que el campo 'puesto' debe corregirse."
+    },
+    {
+      "id": "CP-08",
+      "escenario": "Editar el departamento con un valor fuera del catálogo se rechaza",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, departamento Ventas"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con departamento fuera del catálogo",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "7",
+        "departamento": "Marketing"
+      },
+      "resultado_esperado": "Código 422. La pantalla muestra en 'mensaje-error' que el campo 'departamento' debe corregirse."
+    },
+    {
+      "id": "CP-09",
+      "escenario": "Dar de baja a un empleado activo",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Enviar baja del empleado 7 con fecha_baja indicada",
+        "Verificar código y estado resultante"
+      ],
+      "datos": {
+        "id": "7",
+        "fecha_ingreso": "2023-05-10",
+        "fecha_baja": "2026-03-15"
+      },
+      "resultado_esperado": "Código 200. El empleado 7 tiene estado 'baja' y fecha_baja '2026-03-15'."
+    },
+    {
+      "id": "CP-10",
+      "escenario": "Dar de baja a un empleado activo",
+      "nivel": "e2e",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Clic en 'baja-empleado-7'",
+        "Llenar 'empleado-fecha-baja' con '2026-03-15'",
+        "Clic en 'confirmar-baja'",
+        "Verificar fila y estado del empleado"
+      ],
+      "datos": {
+        "id": "7",
+        "fecha_baja": "2026-03-15"
+      },
+      "resultado_esperado": "El empleado 7 sigue en 'tabla-empleados' fila 'fila-empleado-7'; 'estado-empleado-7' muestra texto 'Baja'."
+    },
+    {
+      "id": "CP-11",
+      "escenario": "Dar de baja con fecha_baja igual a la fecha_ingreso se acepta",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Enviar baja del empleado 7 con fecha_baja igual a fecha_ingreso",
+        "Verificar código y fecha_baja resultante"
+      ],
+      "datos": {
+        "id": "7",
+        "fecha_ingreso": "2023-05-10",
+        "fecha_baja": "2023-05-10"
+      },
+      "resultado_esperado": "Código 200. El empleado 7 tiene fecha_baja '2023-05-10'."
+    },
+    {
+      "id": "CP-12",
+      "escenario": "Dar de baja con fecha_baja un día antes de la fecha_ingreso se rechaza",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado activo id 7, numero_empleado EMP-0007, correo ana@empresa.com, fecha_ingreso 2023-05-10"
+      ],
+      "pasos": [
+        "Enviar baja del empleado 7 con fecha_baja un día antes de fecha_ingreso",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "7",
+        "fecha_ingreso": "2023-05-10",
+        "fecha_baja": "2023-05-09"
+      },
+      "resultado_esperado": "Código 422. La pantalla muestra en 'mensaje-error' que el campo 'fecha_baja' debe corregirse."
+    },
+    {
+      "id": "CP-13",
+      "escenario": "Intentar editar a un empleado dado de baja",
+      "nivel": "api",
+      "precondiciones": [
+        "Empleado id 7, numero_empleado EMP-0007, correo ana@empresa.com, puesto Analista, estado baja, fecha_baja 2026-03-15"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 7 con puesto nuevo",
+        "Verificar código, mensaje y que el puesto no cambió"
+      ],
+      "datos": {
+        "id": "7",
+        "puesto": "Analista Senior"
+      },
+      "resultado_esperado": "Código 409. El mensaje en 'mensaje-error' es 'No se puede editar a un empleado dado de baja'. El empleado 7 conserva su puesto 'Analista'."
+    },
+    {
+      "id": "CP-14",
+      "escenario": "Intentar editar a un empleado que no existe",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con id 999"
+      ],
+      "pasos": [
+        "Enviar edición del empleado 999 con puesto nuevo",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "999",
+        "puesto": "Analista Senior"
+      },
+      "resultado_esperado": "Código 404. El mensaje en 'mensaje-error' es 'Empleado no encontrado'."
+    },
+    {
+      "id": "CP-15",
+      "escenario": "Intentar dar de baja a un empleado que no existe",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con id 999"
+      ],
+      "pasos": [
+        "Enviar baja del empleado 999 con fecha_baja indicada",
+        "Verificar código y mensaje de error"
+      ],
+      "datos": {
+        "id": "999",
+        "fecha_baja": "2026-03-15"
+      },
+      "resultado_esperado": "Código 404. El mensaje en 'mensaje-error' es 'Empleado no encontrado'."
+    }
+  ]
+}
