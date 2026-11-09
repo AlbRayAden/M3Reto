@@ -8,7 +8,7 @@ from typing import Literal
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-from agentes.base import SALIDA
+from agentes.base import RAIZ, SALIDA
 
 
 class Diagnostico(BaseModel):
@@ -20,12 +20,17 @@ class Diagnostico(BaseModel):
 
 PROMPT = """Eres líder técnico. Unas pruebas automatizadas fallaron. Decide quién debe corregir:
 - "desarrollador": la aplicación no cumple un criterio de aceptación.
-- "automatizador": la prueba contradice el criterio, usa un selector incorrecto o es frágil.
+- "automatizador": la prueba contradice el criterio, usa un selector incorrecto o es frágil
+  (por ejemplo, afirma con is_visible() o get_attribute() justo después de una acción, sin esperar con expect).
 - "despliegue": la aplicación no responde (conexión rechazada, 502, contenedor caído).
 El criterio de aceptación manda: si la prueba y la aplicación no coinciden, gana quien siga el criterio.
+Los códigos, mensajes y data-testid deben coincidir letra por letra con las convenciones de la aplicación.
 
 ## Criterios de aceptación
 {criterios}
+
+## Convenciones de la aplicación (API, mensajes exactos y data-testid)
+{convenciones}
 
 ## Pruebas fallidas
 {fallos}"""
@@ -34,4 +39,6 @@ El criterio de aceptación manda: si la prueba y la aplicación no coinciden, ga
 def diagnosticar(hu: str, fallos: str) -> Diagnostico:
     llm = ChatAnthropic(model=os.environ["MODEL"], max_tokens=2000)
     criterios = (SALIDA / hu / "criterios.feature").read_text(encoding="utf-8")
-    return llm.with_structured_output(Diagnostico).invoke(PROMPT.format(criterios=criterios, fallos=fallos[:6000]))
+    convenciones = (RAIZ / "contexto" / "convenciones_app.md").read_text(encoding="utf-8")
+    return llm.with_structured_output(Diagnostico).invoke(
+        PROMPT.format(criterios=criterios, convenciones=convenciones, fallos=fallos[:6000]))

@@ -1,0 +1,550 @@
+{
+  "historia": "HU-01",
+  "casos": [
+    {
+      "id": "CP-01",
+      "escenario": "Registrar un empleado con datos válidos",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo ana.lopez@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados con los datos"
+      ],
+      "datos": {
+        "nombre": "Ana López",
+        "correo": "ana.lopez@empresa.com",
+        "puesto": "Analista de Datos",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2024-01-15"
+      },
+      "resultado_esperado": "201; numero_empleado EMP-0001; estado activo"
+    },
+    {
+      "id": "CP-02",
+      "escenario": "El número de empleado es consecutivo al registrar un segundo empleado",
+      "nivel": "api",
+      "precondiciones": [
+        "Ya existe el empleado con numero_empleado EMP-0001"
+      ],
+      "pasos": [
+        "POST /api/empleados con los datos"
+      ],
+      "datos": {
+        "nombre": "Carlos Ruiz",
+        "correo": "carlos.ruiz@empresa.com",
+        "puesto": "Vendedor",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-02-01"
+      },
+      "resultado_esperado": "201; numero_empleado EMP-0002"
+    },
+    {
+      "id": "CP-03",
+      "escenario": "Rechazar un correo duplicado sin importar mayúsculas",
+      "nivel": "api",
+      "precondiciones": [
+        "Ya existe un empleado registrado con el correo ana.lopez@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados con correo en mayúsculas"
+      ],
+      "datos": {
+        "nombre": "Ana Lopez Segunda",
+        "correo": "Ana.Lopez@Empresa.com",
+        "puesto": "Analista Junior",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2024-03-01"
+      },
+      "resultado_esperado": "409; detail: El correo ya está registrado"
+    },
+    {
+      "id": "CP-04",
+      "escenario": "Guardar el correo en minúsculas aunque se capture con mayúsculas",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo maria.perez@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados con correo con mayúsculas mixtas"
+      ],
+      "datos": {
+        "nombre": "María Pérez",
+        "correo": "Maria.Perez@EMPRESA.com",
+        "puesto": "Contadora",
+        "departamento": "Finanzas",
+        "fecha_ingreso": "2024-01-10"
+      },
+      "resultado_esperado": "201; correo guardado como maria.perez@empresa.com"
+    },
+    {
+      "id": "CP-05",
+      "escenario": "Rechazar un correo que no es corporativo",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con correo no corporativo"
+      ],
+      "datos": {
+        "nombre": "Jorge Díaz",
+        "correo": "jorge.diaz@gmail.com",
+        "puesto": "Técnico",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; detail: Usa el correo corporativo @empresa.com"
+    },
+    {
+      "id": "CP-06",
+      "escenario": "Rechazar un nombre demasiado corto",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con nombre de 1 carácter"
+      ],
+      "datos": {
+        "nombre": "A",
+        "correo": "a@empresa.com",
+        "puesto": "Auxiliar",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; campo nombre indicado para corregir"
+    },
+    {
+      "id": "CP-07",
+      "escenario": "Aceptar un nombre con exactamente 2 caracteres",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con nombre de 2 caracteres"
+      ],
+      "datos": {
+        "nombre": "Jo",
+        "correo": "jo@empresa.com",
+        "puesto": "Auxiliar Operativo",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "201"
+    },
+    {
+      "id": "CP-08",
+      "escenario": "Rechazar un nombre que supera los 80 caracteres",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con nombre de 81 caracteres"
+      ],
+      "datos": {
+        "nombre": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "correo": "nombre.largo@empresa.com",
+        "puesto": "Gerente",
+        "departamento": "Finanzas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; campo nombre indicado para corregir"
+    },
+    {
+      "id": "CP-09",
+      "escenario": "Aceptar un nombre con exactamente 80 caracteres",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con nombre de 80 caracteres"
+      ],
+      "datos": {
+        "nombre": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "correo": "nombre.limite@empresa.com",
+        "puesto": "Gerente",
+        "departamento": "Finanzas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "201"
+    },
+    {
+      "id": "CP-10",
+      "escenario": "Rechazar un puesto demasiado corto",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con puesto de 1 carácter"
+      ],
+      "datos": {
+        "nombre": "Luis Gómez",
+        "correo": "puesto.corto@empresa.com",
+        "puesto": "A",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; campo puesto indicado para corregir"
+    },
+    {
+      "id": "CP-11",
+      "escenario": "Aceptar un puesto con exactamente 60 caracteres",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con puesto de 60 caracteres"
+      ],
+      "datos": {
+        "nombre": "Luis Gómez",
+        "correo": "puesto.limite@empresa.com",
+        "puesto": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "201"
+    },
+    {
+      "id": "CP-12",
+      "escenario": "Rechazar un puesto que supera los 60 caracteres",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados con puesto de 61 caracteres"
+      ],
+      "datos": {
+        "nombre": "Luis Gómez",
+        "correo": "puesto.largo@empresa.com",
+        "puesto": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; campo puesto indicado para corregir"
+    },
+    {
+      "id": "CP-13",
+      "escenario": "Rechazar un departamento que no está en el catálogo",
+      "nivel": "api",
+      "precondiciones": [
+        "Catálogo de departamentos válidos: Tecnología, Ventas, Finanzas, Recursos Humanos, Operaciones"
+      ],
+      "pasos": [
+        "POST /api/empleados con departamento fuera del catálogo"
+      ],
+      "datos": {
+        "nombre": "Sofía Torres",
+        "correo": "depto.invalido@empresa.com",
+        "puesto": "Analista",
+        "departamento": "Marketing",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "422; campo departamento indicado para corregir"
+    },
+    {
+      "id": "CP-14",
+      "escenario": "Rechazar una fecha de ingreso futura",
+      "nivel": "api",
+      "precondiciones": [
+        "Fecha de hoy es 2026-06-15"
+      ],
+      "pasos": [
+        "POST /api/empleados con fecha_ingreso futura"
+      ],
+      "datos": {
+        "nombre": "Pedro Sánchez",
+        "correo": "pedro.sanchez@empresa.com",
+        "puesto": "Desarrollador",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2026-06-16",
+        "fecha_hoy": "2026-06-15"
+      },
+      "resultado_esperado": "422; detail: La fecha de ingreso no puede ser futura"
+    },
+    {
+      "id": "CP-15",
+      "escenario": "Aceptar una fecha de ingreso igual al día de hoy",
+      "nivel": "api",
+      "precondiciones": [
+        "Fecha de hoy es 2026-06-15"
+      ],
+      "pasos": [
+        "POST /api/empleados con fecha_ingreso igual a hoy"
+      ],
+      "datos": {
+        "nombre": "Pedro Sánchez",
+        "correo": "pedro.sanchez2@empresa.com",
+        "puesto": "Desarrollador",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2026-06-15",
+        "fecha_hoy": "2026-06-15"
+      },
+      "resultado_esperado": "201"
+    },
+    {
+      "id": "CP-16",
+      "escenario": "Aceptar una fecha de ingreso un día antes de hoy",
+      "nivel": "api",
+      "precondiciones": [
+        "Fecha de hoy es 2026-06-15"
+      ],
+      "pasos": [
+        "POST /api/empleados con fecha_ingreso un día antes de hoy"
+      ],
+      "datos": {
+        "nombre": "Laura Méndez",
+        "correo": "laura.mendez@empresa.com",
+        "puesto": "Diseñadora",
+        "departamento": "Recursos Humanos",
+        "fecha_ingreso": "2026-06-14",
+        "fecha_hoy": "2026-06-15"
+      },
+      "resultado_esperado": "201"
+    },
+    {
+      "id": "CP-17",
+      "escenario": "Rechazar el registro cuando falta un campo obligatorio",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo sinnombre@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados sin nombre"
+      ],
+      "datos": {
+        "nombre": "",
+        "correo": "sinnombre@empresa.com",
+        "puesto": "Analista",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-10"
+      },
+      "resultado_esperado": "422; campo nombre indicado para corregir"
+    },
+    {
+      "id": "CP-18",
+      "escenario": "Rechazar el registro cuando falta un campo obligatorio",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "POST /api/empleados sin correo"
+      ],
+      "datos": {
+        "nombre": "Marco Vidal",
+        "correo": "",
+        "puesto": "Analista",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-10"
+      },
+      "resultado_esperado": "422; campo correo indicado para corregir"
+    },
+    {
+      "id": "CP-19",
+      "escenario": "Rechazar el registro cuando falta un campo obligatorio",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo marco.vidal@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados sin puesto"
+      ],
+      "datos": {
+        "nombre": "Marco Vidal",
+        "correo": "marco.vidal@empresa.com",
+        "puesto": "",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-10"
+      },
+      "resultado_esperado": "422; campo puesto indicado para corregir"
+    },
+    {
+      "id": "CP-20",
+      "escenario": "Rechazar el registro cuando falta un campo obligatorio",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo marco.vidal2@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados sin fecha_ingreso"
+      ],
+      "datos": {
+        "nombre": "Marco Vidal",
+        "correo": "marco.vidal2@empresa.com",
+        "puesto": "Analista",
+        "departamento": "Ventas",
+        "fecha_ingreso": ""
+      },
+      "resultado_esperado": "422; campo fecha_ingreso indicado para corregir"
+    },
+    {
+      "id": "CP-21",
+      "escenario": "El estado inicial de un empleado registrado es activo",
+      "nivel": "api",
+      "precondiciones": [
+        "No existe ningún empleado con el correo nuevo.ingreso@empresa.com"
+      ],
+      "pasos": [
+        "POST /api/empleados con los datos"
+      ],
+      "datos": {
+        "nombre": "Nuevo Ingreso",
+        "correo": "nuevo.ingreso@empresa.com",
+        "puesto": "Becario",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-01"
+      },
+      "resultado_esperado": "201; estado activo"
+    },
+    {
+      "id": "CP-22",
+      "escenario": "Registrar un empleado con datos válidos",
+      "nivel": "e2e",
+      "precondiciones": [
+        "No existe ningún empleado con el correo ana.lopez@empresa.com"
+      ],
+      "pasos": [
+        "Completar empleado-nombre, empleado-correo, empleado-puesto, empleado-departamento y empleado-fecha-ingreso",
+        "Clic en empleado-guardar",
+        "Verificar mensaje-exito"
+      ],
+      "datos": {
+        "nombre": "Ana López",
+        "correo": "ana.lopez@empresa.com",
+        "puesto": "Analista de Datos",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2024-01-15"
+      },
+      "resultado_esperado": "mensaje-exito muestra el número de empleado EMP-0001"
+    },
+    {
+      "id": "CP-23",
+      "escenario": "Rechazar un correo duplicado sin importar mayúsculas",
+      "nivel": "e2e",
+      "precondiciones": [
+        "Ya existe un empleado registrado con el correo ana.lopez@empresa.com"
+      ],
+      "pasos": [
+        "Completar formulario con correo en mayúsculas",
+        "Clic en empleado-guardar",
+        "Verificar mensaje-error"
+      ],
+      "datos": {
+        "nombre": "Ana Lopez Segunda",
+        "correo": "Ana.Lopez@Empresa.com",
+        "puesto": "Analista Junior",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2024-03-01"
+      },
+      "resultado_esperado": "mensaje-error muestra El correo ya está registrado"
+    },
+    {
+      "id": "CP-24",
+      "escenario": "Rechazar un correo que no es corporativo",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Completar formulario con correo no corporativo",
+        "Clic en empleado-guardar",
+        "Verificar mensaje-error"
+      ],
+      "datos": {
+        "nombre": "Jorge Díaz",
+        "correo": "jorge.diaz@gmail.com",
+        "puesto": "Técnico",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "mensaje-error muestra Usa el correo corporativo @empresa.com"
+    },
+    {
+      "id": "CP-25",
+      "escenario": "Rechazar el registro cuando falta un campo obligatorio",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Dejar empleado-nombre vacío y completar el resto",
+        "Clic en empleado-guardar",
+        "Verificar indicación en empleado-nombre"
+      ],
+      "datos": {
+        "nombre": "",
+        "correo": "sinnombre@empresa.com",
+        "puesto": "Analista",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-10"
+      },
+      "resultado_esperado": "campo empleado-nombre marcado para corregir"
+    },
+    {
+      "id": "CP-26",
+      "escenario": "Rechazar un departamento que no está en el catálogo",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Completar empleado-departamento con valor fuera del catálogo",
+        "Completar el resto del formulario",
+        "Clic en empleado-guardar",
+        "Verificar indicación en empleado-departamento"
+      ],
+      "datos": {
+        "nombre": "Sofía Torres",
+        "correo": "depto.invalido@empresa.com",
+        "puesto": "Analista",
+        "departamento": "Marketing",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "campo empleado-departamento marcado para corregir"
+    },
+    {
+      "id": "CP-27",
+      "escenario": "Rechazar una fecha de ingreso futura",
+      "nivel": "e2e",
+      "precondiciones": [
+        "Fecha de hoy es 2026-06-15"
+      ],
+      "pasos": [
+        "Completar empleado-fecha-ingreso con fecha futura",
+        "Completar el resto del formulario",
+        "Clic en empleado-guardar",
+        "Verificar mensaje-error"
+      ],
+      "datos": {
+        "nombre": "Pedro Sánchez",
+        "correo": "pedro.sanchez@empresa.com",
+        "puesto": "Desarrollador",
+        "departamento": "Tecnología",
+        "fecha_ingreso": "2026-06-16",
+        "fecha_hoy": "2026-06-15"
+      },
+      "resultado_esperado": "mensaje-error muestra La fecha de ingreso no puede ser futura"
+    },
+    {
+      "id": "CP-28",
+      "escenario": "Rechazar un nombre demasiado corto",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Completar empleado-nombre con A y el resto del formulario",
+        "Clic en empleado-guardar",
+        "Verificar indicación en empleado-nombre"
+      ],
+      "datos": {
+        "nombre": "A",
+        "correo": "a@empresa.com",
+        "puesto": "Auxiliar",
+        "departamento": "Operaciones",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "campo empleado-nombre marcado para corregir"
+    },
+    {
+      "id": "CP-29",
+      "escenario": "Rechazar un puesto demasiado corto",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Completar empleado-puesto con A y el resto del formulario",
+        "Clic en empleado-guardar",
+        "Verificar indicación en empleado-puesto"
+      ],
+      "datos": {
+        "nombre": "Luis Gómez",
+        "correo": "puesto.corto@empresa.com",
+        "puesto": "A",
+        "departamento": "Ventas",
+        "fecha_ingreso": "2024-01-20"
+      },
+      "resultado_esperado": "campo empleado-puesto marcado para corregir"
+    }
+  ]
+}

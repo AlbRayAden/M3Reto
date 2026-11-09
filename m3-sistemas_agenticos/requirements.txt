@@ -1,6 +1,7 @@
 anthropic
 claude-agent-sdk
 langgraph
+langgraph-checkpoint-sqlite
 langchain-anthropic
 pydantic
 python-dotenv
@@ -13,6 +14,5 @@ uvicorn
 sqlalchemy
 email-validator
 mcp>=1.23,<2
-chromium
 langgraph-checkpoint-postgres
 psycopg[binary]

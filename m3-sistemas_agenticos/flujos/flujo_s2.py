@@ -124,10 +124,23 @@ def construir_grafo():
     return app
 
 
-def ejecutar(app, historia: str) -> dict:
-    """Corre el flujo y atiende cada pausa humana desde la terminal."""
+def ejecutar(app, historia: str, nuevo: bool = False) -> dict:
+    """Corre el flujo y atiende cada pausa humana desde la terminal.
+
+    El thread_id es el nombre de la historia. Si ese hilo quedó en pausa o se interrumpió
+    (y el checkpointer guarda en disco), se retoma donde se quedó en lugar de empezar de cero.
+    Con `nuevo=True`, o si la ejecución anterior ya terminó, se borra el hilo y se empieza limpio
+    para que la bitácora y el costo (que usan reductores) no mezclen dos ejecuciones.
+    """
     cfg = {"configurable": {"thread_id": Path(historia).stem}}
-    out = app.invoke({"historia": str(Path(historia).resolve())}, cfg)
+    previo = app.get_state(cfg)
+    if previo.next and not nuevo:
+        print(f"Retomando {Path(historia).stem} desde: {', '.join(previo.next)}")
+        pausas = [i for tarea in previo.tasks for i in tarea.interrupts]
+        out = {"__interrupt__": pausas} if pausas else app.invoke(None, cfg)
+    else:
+        app.checkpointer.delete_thread(cfg["configurable"]["thread_id"])
+        out = app.invoke({"historia": str(Path(historia).resolve())}, cfg)
     while "__interrupt__" in out:
         pausa = out["__interrupt__"][0].value
         for clave in ("preguntas", "plan", "diagnostico"):

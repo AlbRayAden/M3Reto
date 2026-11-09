@@ -1,0 +1,244 @@
+{
+  "historia": "HU-02",
+  "casos": [
+    {
+      "id": "CP-01",
+      "escenario": "Camino feliz - ver el directorio completo con sus columnas",
+      "nivel": "api",
+      "precondiciones": [
+        "Existen EMP-0001 Ana López activo, EMP-0002 Carlos Ruiz activo, EMP-0003 María Fernández baja"
+      ],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {},
+      "resultado_esperado": "200 OK; la respuesta trae 3 empleados con numero_empleado, nombre, puesto, departamento y estado correctos para EMP-0001, EMP-0002 y EMP-0003"
+    },
+    {
+      "id": "CP-02",
+      "escenario": "Un empleado dado de baja sigue apareciendo en el directorio",
+      "nivel": "api",
+      "precondiciones": [
+        "El empleado EMP-0003 María Fernández tiene estado baja"
+      ],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {},
+      "resultado_esperado": "200 OK; EMP-0003 aparece en la respuesta con estado 'baja'"
+    },
+    {
+      "id": "CP-03",
+      "escenario": "Buscar por nombre sin importar mayúsculas o minúsculas",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "nombre": "Ana López"
+      },
+      "resultado_esperado": "200 OK; la respuesta incluye el nombre exacto 'Ana López' para filtrar sin distinguir mayúsculas en el cliente"
+    },
+    {
+      "id": "CP-04",
+      "escenario": "Buscar por una parte del nombre (coincidencia parcial, no solo al inicio)",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "nombre": "Ana López"
+      },
+      "resultado_esperado": "200 OK; el nombre 'Ana López' permite coincidencia parcial 'lóp' en el filtrado del cliente"
+    },
+    {
+      "id": "CP-05",
+      "escenario": "Buscar por correo sin importar mayúsculas o minúsculas",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "correo": "carlos.ruiz@empresa.com"
+      },
+      "resultado_esperado": "200 OK; la respuesta incluye el correo exacto 'carlos.ruiz@empresa.com' para filtrar sin distinguir mayúsculas"
+    },
+    {
+      "id": "CP-06",
+      "escenario": "Filtrar por departamento",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "departamento": "Ventas"
+      },
+      "resultado_esperado": "200 OK; EMP-0002 aparece con departamento 'Ventas' en la respuesta"
+    },
+    {
+      "id": "CP-07",
+      "escenario": "Combinar búsqueda y filtro por departamento",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "departamento": "Finanzas",
+        "nombre": "María Fernández"
+      },
+      "resultado_esperado": "200 OK; EMP-0003 aparece con departamento 'Finanzas' y nombre 'María Fernández'"
+    },
+    {
+      "id": "CP-08",
+      "escenario": "Búsqueda sin resultados muestra el mensaje correspondiente",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "busqueda": "xyz-no-existe"
+      },
+      "resultado_esperado": "200 OK; ningún empleado de la respuesta contiene 'xyz-no-existe' en nombre o correo"
+    },
+    {
+      "id": "CP-09",
+      "escenario": "Filtro por departamento sin resultados muestra el mensaje correspondiente",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {
+        "departamento": "Recursos Humanos"
+      },
+      "resultado_esperado": "200 OK; ningún empleado de la respuesta pertenece al departamento 'Recursos Humanos'"
+    },
+    {
+      "id": "CP-10",
+      "escenario": "Limpiar la búsqueda vuelve a mostrar todos los empleados",
+      "nivel": "api",
+      "precondiciones": [],
+      "pasos": [
+        "Enviar GET /api/empleados"
+      ],
+      "datos": {},
+      "resultado_esperado": "200 OK; la respuesta trae los 3 empleados completos, sin filtros aplicados"
+    },
+    {
+      "id": "CP-11",
+      "escenario": "Camino feliz - ver el directorio completo con sus columnas",
+      "nivel": "e2e",
+      "precondiciones": [
+        "Existen EMP-0001 Ana López activo, EMP-0002 Carlos Ruiz activo, EMP-0003 María Fernández baja"
+      ],
+      "pasos": [
+        "Abrir pantalla del directorio de empleados",
+        "Verificar 'tabla-empleados' muestra 3 filas",
+        "Verificar 'fila-empleado-1' con numero 'EMP-0001', nombre 'Ana López', estado 'Activo'",
+        "Verificar 'estado-empleado-3' muestra 'Baja'"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla con 3 filas; fila 1 con datos de Ana López activa, fila 3 con estado Baja"
+    },
+    {
+      "id": "CP-12",
+      "escenario": "Un empleado dado de baja sigue apareciendo en el directorio",
+      "nivel": "e2e",
+      "precondiciones": [
+        "El empleado EMP-0003 María Fernández tiene estado baja"
+      ],
+      "pasos": [
+        "Abrir pantalla del directorio de empleados",
+        "Verificar 'fila-empleado-3' presente en 'tabla-empleados'",
+        "Verificar 'estado-empleado-3' muestra 'Baja'"
+      ],
+      "datos": {},
+      "resultado_esperado": "Fila 'fila-empleado-3' visible con estado 'Baja'"
+    },
+    {
+      "id": "CP-13",
+      "escenario": "Buscar por nombre sin importar mayúsculas o minúsculas",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Escribir 'ANA LÓPEZ' en 'buscar-empleados'",
+        "Verificar 'tabla-empleados' muestra 1 fila",
+        "Verificar 'fila-empleado-1' presente"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla muestra 1 fila: 'fila-empleado-1'"
+    },
+    {
+      "id": "CP-14",
+      "escenario": "Buscar por una parte del nombre (coincidencia parcial, no solo al inicio)",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Escribir 'lóp' en 'buscar-empleados'",
+        "Verificar 'tabla-empleados' muestra 1 fila",
+        "Verificar 'fila-empleado-1' presente"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla muestra 1 fila: 'fila-empleado-1'"
+    },
+    {
+      "id": "CP-15",
+      "escenario": "Filtrar por departamento",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Seleccionar 'Ventas' en 'filtro-departamento'",
+        "Verificar 'tabla-empleados' muestra 1 fila",
+        "Verificar 'fila-empleado-2' presente"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla muestra 1 fila: 'fila-empleado-2'"
+    },
+    {
+      "id": "CP-16",
+      "escenario": "Combinar búsqueda y filtro por departamento",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Seleccionar 'Finanzas' en 'filtro-departamento'",
+        "Escribir 'maría' en 'buscar-empleados'",
+        "Verificar 'tabla-empleados' muestra 1 fila",
+        "Verificar 'fila-empleado-3' presente"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla muestra 1 fila: 'fila-empleado-3'"
+    },
+    {
+      "id": "CP-17",
+      "escenario": "Búsqueda sin resultados muestra el mensaje correspondiente",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Escribir 'xyz-no-existe' en 'buscar-empleados'",
+        "Verificar 'tabla-empleados' muestra 0 filas",
+        "Verificar elemento 'sin-resultados' visible"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla vacía y 'sin-resultados' visible"
+    },
+    {
+      "id": "CP-18",
+      "escenario": "Limpiar la búsqueda vuelve a mostrar todos los empleados",
+      "nivel": "e2e",
+      "precondiciones": [],
+      "pasos": [
+        "Escribir 'ana' en 'buscar-empleados'",
+        "Borrar contenido de 'buscar-empleados'",
+        "Verificar 'tabla-empleados' muestra 3 filas"
+      ],
+      "datos": {},
+      "resultado_esperado": "Tabla muestra 3 filas"
+    }
+  ]
+}

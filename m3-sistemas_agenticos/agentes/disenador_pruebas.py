@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ValidationError
 
-from agentes.analista import escenarios
+from agentes.analista import escenarios, mensajes_faltantes, mensajes_requeridos
 from agentes.base import RAIZ, Herramienta, ejecutar_agente, herramientas_archivos, rel
 
 
@@ -33,9 +33,16 @@ escribes casos de prueba que luego otra persona automatizará.
 
 Cómo trabajas:
 1. Lee {criterios} y contexto/convenciones_app.md (ahí están la API y los data-testid de la pantalla).
-2. Para cada escenario escribe al menos un caso de nivel "api". Si el escenario involucra la pantalla,
-   escribe además uno de nivel "e2e" cuyos pasos mencionen los data-testid que se usan.
+2. Para cada escenario escribe exactamente un caso de nivel "api". Escribe además casos de nivel "e2e"
+   solo para los flujos principales de la pantalla (máximo 8 en total), cuyos pasos mencionen los data-testid.
+   Sé conciso, porque todos los casos se guardan en una sola llamada: máximo 4 pasos por caso y frases cortas.
+   Razona poco y no repitas en los pasos lo que ya está en "datos".
 3. Usa datos concretos. Para correos usa el dominio corporativo empresa.com.
+   - Si el resultado depende de fechas (antigüedad, saldos por año), incluye en "datos" la fecha_ingreso
+     del empleado y todas las fechas y el año que usa el caso; nunca dependas de la fecha de hoy.
+   - Si el caso necesita un estado previo (solicitudes ya registradas, empleado dado de baja),
+     escríbelo en "precondiciones" con sus datos concretos.
+   - En "resultado_esperado" escribe el código de respuesta y el mensaje exacto, copiado letra por letra.
 4. Guarda los casos llamando a la herramienta guardar_casos (no escribas el JSON a mano).
    - "nivel" solo puede ser "api" o "e2e".
    - En "datos" TODOS los valores son texto: "201", no 201; para un campo vacío usa "", nunca null.
@@ -44,8 +51,9 @@ Cómo trabajas:
 5. Responde al final con una sola línea: cuántos casos escribiste."""
 
 
-def validar_plan(texto: str, gherkin: str) -> list[str]:
-    """Evaluador determinista: JSON válido y cada escenario cubierto por al menos un caso."""
+def validar_plan(texto: str, gherkin: str, requeridos: list[str] | None = None) -> list[str]:
+    """Evaluador determinista: JSON válido, cada escenario cubierto por al menos un caso
+    y cada mensaje exacto requerido presente en algún caso."""
     try:
         plan = PlanPruebas.model_validate_json(texto)
     except ValidationError as e:
@@ -55,6 +63,9 @@ def validar_plan(texto: str, gherkin: str) -> list[str]:
     ids = [c.id for c in plan.casos]
     if len(ids) != len(set(ids)):
         problemas.append("Hay ids de caso repetidos.")
+    textos = "\n".join(f"{c.resultado_esperado}\n{' '.join(c.pasos)}" for c in plan.casos)
+    for m in mensajes_faltantes(textos, requeridos or []):
+        problemas.append(f"Ningún caso espera el mensaje exacto «{m}».")
     return problemas
 
 
@@ -87,10 +98,12 @@ def disenar_casos(criterios: Path, max_intentos: int = 2) -> Path:
     sistema = SISTEMA.format(criterios=rel(criterios))
     gherkin = criterios.read_text(encoding="utf-8")
     tarea = f"Diseña los casos de prueba para {rel(criterios)}."
+    historia = next((RAIZ / "historias").glob(f"{carpeta.name}-*.md"), None)   # salida/HU-10 -> historias/HU-10-*.md
+    requeridos = mensajes_requeridos(historia) if historia else []
     for intento in range(1, max_intentos + 1):
         print(f"Diseñador de pruebas · intento {intento}")
         ejecutar_agente(sistema, herramientas, tarea, nombre="disenador")
-        problemas = validar_plan(destino.read_text(encoding="utf-8"), gherkin) if destino.exists() \
+        problemas = validar_plan(destino.read_text(encoding="utf-8"), gherkin, requeridos) if destino.exists() \
             else [f"No se escribió {rel(destino)}."]
         if not problemas:
             return destino

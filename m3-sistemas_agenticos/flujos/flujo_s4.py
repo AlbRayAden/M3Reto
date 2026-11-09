@@ -4,17 +4,19 @@ Uso:  python -m flujos.flujo_s4 historias/HU-01-registrar-empleado.md
       DEFENSAS=0 python -m flujos.flujo_s4 historias/HU-99-envenenada.md   (solo en clase, para ver el ataque)
 """
 import os
+import sqlite3
 import sys
 from pathlib import Path
 from typing import Literal
 
 from langchain_anthropic import ChatAnthropic
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import interrupt
 from pydantic import BaseModel
 
 from agentes import desarrollador
-from agentes.base import SALIDA
+from agentes.base import RAIZ, SALIDA
 from agentes.automatizador import automatizar as agente_automatizador
 from agentes.despliegue import desplegar as agente_despliegue
 from agentes.triage import diagnosticar
@@ -34,6 +36,7 @@ class Estado(s3.Estado, total=False):
     ciclos: int
     responsable: str
     instruccion: str
+    escalado: bool
 
 
 # --- Capa de seguridad: la historia es contenido no confiable ---------------
@@ -71,8 +74,32 @@ def pruebas_e2e(s: Estado) -> Estado:
             "bitacora": [f"Pruebas E2E: {log.splitlines()[0]}"]}
 
 
-def despues_de_e2e(s: Estado) -> Literal["triage", "fin"]:
-    return "triage" if not s["e2e_ok"] and s["ciclos"] < MAX_CICLOS else "fin"
+def despues_de_e2e(s: Estado) -> Literal["triage", "escalar", "fin"]:
+    if s["e2e_ok"]:
+        return "fin"
+    if s["ciclos"] < MAX_CICLOS:
+        return "triage"
+    return "fin" if s.get("escalado") else "escalar"                   # una sola escalada: el bucle tiene límite
+
+
+def escalar(s: Estado) -> Estado:
+    """Humano en el bucle: el triage no resolvió en MAX_CICLOS; una persona decide quién corrige o si se detiene."""
+    respuesta = interrupt({
+        "diagnostico": (f"Tras {s['ciclos']} ciclos de corrección las pruebas siguen fallando.\n"
+                        f"Último diagnóstico del triage → {s.get('responsable', '-')}\n\n{s['log_e2e'][:3000]}"),
+        "pregunta": ("Escribe 'desarrollador: <instrucción>', 'automatizador: <instrucción>', "
+                     "'despliegue: <instrucción>' o 'fin'")})
+    responsable, _, instruccion = respuesta.partition(":")
+    responsable = responsable.strip().lower()
+    if responsable not in ("desarrollador", "automatizador", "despliegue"):
+        return {"escalado": True, "responsable": "", "bitacora": [f"Escalado a una persona: decidió '{respuesta.strip()}'"]}
+    return {"escalado": True, "responsable": responsable,
+            "instruccion": f"Instrucción de una persona: {instruccion.strip()}\n\n{s['log_e2e']}",
+            "bitacora": [f"Escalado a una persona → {responsable}: {instruccion.strip()}"]}
+
+
+def despues_de_escalar(s: Estado) -> Literal["corregir_codigo", "corregir_pruebas", "corregir_despliegue", "fin"]:
+    return despues_de_triage(s) if s.get("responsable") else "fin"
 
 
 def triage(s: Estado) -> Estado:
@@ -123,7 +150,8 @@ def construir_grafo():
                        ("planificar", s2.planificar), ("aprobar_plan", s2.aprobar_plan),
                        ("construir", s2.construir), ("verificar", s2.verificar),
                        ("desplegar", s3.desplegar), ("automatizar", s3.automatizar), ("listo", s3.listo),
-                       ("pruebas_e2e", pruebas_e2e), ("triage", triage), ("corregir_codigo", corregir_codigo),
+                       ("pruebas_e2e", pruebas_e2e), ("triage", triage), ("escalar", escalar),
+                       ("corregir_codigo", corregir_codigo),
                        ("corregir_pruebas", corregir_pruebas), ("corregir_despliegue", corregir_despliegue),
                        ("fin", reporte)]:
         g.add_node(nombre, fn)
@@ -140,14 +168,21 @@ def construir_grafo():
     g.add_edge("listo", "pruebas_e2e")
     g.add_conditional_edges("pruebas_e2e", despues_de_e2e)
     g.add_conditional_edges("triage", despues_de_triage)
+    g.add_conditional_edges("escalar", despues_de_escalar)
     for correccion in ("corregir_codigo", "corregir_pruebas", "corregir_despliegue"):
         g.add_edge(correccion, "pruebas_e2e")                          # el ciclo: corregir y volver a probar
     g.add_edge("fin", END)
-    app = g.compile(checkpointer=InMemorySaver())
-    #DIBUJA EL GRAFO ! 
+    # Checkpointer en disco: si se cierra la terminal en una pausa (aprobar el plan, escalar),
+    # la ejecución se retoma con el mismo comando. check_same_thread=False porque las ramas
+    # paralelas (desplegar ‖ automatizar) escriben desde otro hilo.
+    conexion = sqlite3.connect(RAIZ / "checkpoints.sqlite", check_same_thread=False)
+    app = g.compile(checkpointer=SqliteSaver(conexion))
+    #DIBUJA EL GRAFO !
     dibuja_grafo(app,"flujo_s4")
     return app
-    
+
 
 if __name__ == "__main__":
-    s2.ejecutar(construir_grafo(), sys.argv[1])
+    # --nuevo descarta una ejecución en pausa de la misma historia y empieza de cero
+    argumentos = [a for a in sys.argv[1:] if a != "--nuevo"]
+    s2.ejecutar(construir_grafo(), argumentos[0], nuevo="--nuevo" in sys.argv)
